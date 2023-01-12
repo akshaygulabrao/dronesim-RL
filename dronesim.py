@@ -84,7 +84,7 @@ class DroneSim(gym.Env):
 
         if self.render_mode == "human":
             self._render_frame()
-        self.distance_prev = None
+        self.out_of_bounds_counter = 0
 
         return observation, info
     
@@ -94,20 +94,23 @@ class DroneSim(gym.Env):
         # We use `np.clip` to make sure we don't leave the grid
         action = action.numpy()
         self.agent_location += action * 10
-        self.agent_location = np.clip(self.agent_location,0,self.window_size -1)
+
+        #self.agent_location = np.clip(self.agent_location,0,self.window_size -1)
         
         # An episode is done iff the agent has reached the target
         distance = np.linalg.norm(self.target_location - self.agent_location)
+        print(distance)
         if (self.agent_location < 0).any() or (self.agent_location > self.window_size).any():
-            reward = -250
-            terminated = True
-        elif distance < 100:
+            terminated = False 
+            self.out_of_bounds_counter+=1
+            if self.out_of_bounds_counter > 5:
+                terminated = True
+            reward = -25000
+        elif distance < 15:
             reward =250
             terminated = True
         else:
             reward = -1 * distance**2
-            if self.distance_prev is not None:
-                reward *= distance - self.distance_prev
             terminated = False
         observation = self._get_obs()
         info = self._get_info()
