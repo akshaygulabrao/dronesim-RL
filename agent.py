@@ -82,7 +82,7 @@ class Agent:
         # note that if the env has an action > 1, we have to multiply by
         # max action at some point
         actions = tf.clip_by_value(actions, self.min_action, self.max_action)
-        print(actions[0])
+        #print(actions[0])
 
         return actions[0]
 
