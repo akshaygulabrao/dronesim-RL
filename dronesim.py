@@ -18,8 +18,7 @@ class DroneSim(gym.Env):
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "velocity": spaces.Box(-2,2,shape=(2,),dtype=float),
+                # "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
             }
         )
 
@@ -52,7 +51,7 @@ class DroneSim(gym.Env):
         self.clock = None
     
     def _get_obs(self):
-        return {"agent": self.agent_location / self.window_size, "target": self.target_location / self.window_size, "velocity": self.agent_velocity / 2}
+        return {"agent": self.agent_location,  "target": self.target_location}
     
     def _get_info(self):
         return {
@@ -77,7 +76,7 @@ class DroneSim(gym.Env):
             self.target_location = self.np_random.integers(
                 0, self.window_size, size=2, dtype=int
             )
-        self.agent_velocity = np.zeros((2,))
+        # currently using action as direction displacement's 0th derivative
         self.agent_location = self.agent_location.astype(float)
         self.target_location = self.target_location.astype(float)
         observation = self._get_obs()
@@ -95,6 +94,7 @@ class DroneSim(gym.Env):
         # We use `np.clip` to make sure we don't leave the grid
         action = action.numpy()
         self.agent_location += action * 10
+        self.agent_location = np.clip(self.agent_location,0,self.window_size -1)
         
         # An episode is done iff the agent has reached the target
         distance = np.linalg.norm(self.target_location - self.agent_location)
@@ -135,7 +135,7 @@ class DroneSim(gym.Env):
         # First we draw the target
         pygame.draw.rect(canvas, (255, 0, 0), pygame.Rect(self.target_location, (10,10),))
         # Now we draw the agent
-        pygame.draw.rect(canvas, (0, 0, 255), pygame.Rect(self.agent_location.astype(int), (10,10)))
+        pygame.draw.rect(canvas, (0, 0, 255), pygame.Rect(self.agent_location, (10,10)))
         if self.render_mode == "human":
             # The following line copies our drawings from `canvas` to the visible window
             self.window.blit(canvas, canvas.get_rect())

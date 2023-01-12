@@ -7,13 +7,13 @@ from gym.wrappers import FlattenObservation,TimeLimit
 
 if __name__ == '__main__':
     manage_memory()
-    env = TimeLimit(FlattenObservation(DroneSim(render_mode="human")),max_episode_steps=30)
-    agent = Agent(input_dims=(6,), env=env,
+    env = TimeLimit(FlattenObservation(DroneSim(render_mode="human")),max_episode_steps=100)
+    agent = Agent(input_dims=(2,), env=env,
                   n_actions=(2,),
                   alpha=0.0001, beta=0.001)
     n_games = 1000
 
-    figure_file = 'plots/lunar_lander.png'
+    figure_file = 'lunar_lander.png'
 
     best_score = env.reward_range[0]
     score_history = []
