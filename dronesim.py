@@ -110,7 +110,7 @@ class DroneSim(gym.Env):
             reward =250
             terminated = True
         else:
-            reward = -1 * distance**2
+            reward = -1 * distance
             terminated = False
         observation = self._get_obs()
         info = self._get_info()

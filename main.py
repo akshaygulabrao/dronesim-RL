@@ -11,17 +11,17 @@ if __name__ == '__main__':
     agent = Agent(input_dims=(2,), env=env,
                   n_actions=(2,),
                   alpha=0.0001, beta=0.001)
-    n_games = 1000
+    n_games = 10_000
 
     figure_file = 'lunar_lander.png'
 
     best_score = env.reward_range[0]
     score_history = []
-    load_checkpoint = False
+    load_checkpoint = True 
 
     if load_checkpoint:
         agent.load_models()
-        evaluate = True
+        evaluate = False 
     else:
         evaluate = False
     evaluate = False
@@ -50,6 +50,6 @@ if __name__ == '__main__':
         print('episode {} score {:.1f} avg score {:.1f}'.
               format(i, score, avg_score))
 
-    if not load_checkpoint:
+    if not evaluate:
         x = [i+1 for i in range(n_games)]
         plot_learning_curve(x, score_history, figure_file)
