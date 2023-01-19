@@ -8,16 +8,16 @@ from gym.wrappers import FlattenObservation,TimeLimit
 if __name__ == '__main__':
     manage_memory()
     env = TimeLimit(FlattenObservation(DroneSim(render_mode="human")),max_episode_steps=100)
-    agent = Agent(input_dims=(2,), env=env,
+    agent = Agent(input_dims=(6,), env=env,
                   n_actions=(2,),
                   alpha=0.0001, beta=0.001)
     n_games = 10_000
 
     figure_file = 'lunar_lander.png'
 
-    best_score = env.reward_range[0]
+    best_score = -1e10 
     score_history = []
-    load_checkpoint = True 
+    load_checkpoint = False
 
     if load_checkpoint:
         agent.load_models()
@@ -47,8 +47,8 @@ if __name__ == '__main__':
             best_score = avg_score
             if not evaluate: agent.save_models()
 
-        print('episode {} score {:.1f} avg score {:.1f}'.
-              format(i, score, avg_score))
+        print('episode {} score {:.1f} avg score {:.1f} best score {:.1f}'.
+              format(i, score, avg_score,best_score))
 
     if not evaluate:
         x = [i+1 for i in range(n_games)]

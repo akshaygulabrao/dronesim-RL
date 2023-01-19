@@ -18,7 +18,8 @@ class DroneSim(gym.Env):
         self.observation_space = spaces.Dict(
             {
                 "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                # "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
+                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int), 
+                "velocity": spaces.Box(-1,1, shape=(2,), dtype=float)
             }
         )
 
@@ -51,7 +52,19 @@ class DroneSim(gym.Env):
         self.clock = None
     
     def _get_obs(self):
-        return {"agent": self.agent_location,  "target": self.target_location}
+        low,high = 0,self.window_size - 1
+        mean = (high + low) / 2
+        std = ((high - low)** 2 / 12)**(1/2)
+        agent_loc = (self.agent_location - mean) / std
+        target_loc = (self.target_location - mean) / std
+
+        low,high = -10,10
+        mean =(high + low) / 2
+        std = ((high - low)** 2  / 12 )**(1/2)
+        agent_vel = (self.agent_velocity - mean) / std
+
+
+        return {"agent": agent_loc,  "target": target_loc, "velocity": agent_vel}
     
     def _get_info(self):
         return {
@@ -66,16 +79,19 @@ class DroneSim(gym.Env):
 
         # Choose the agent's location uniformly at random
         self.agent_location = self.np_random.integers(0, self.window_size, size=2)
+        self.agent_velocity = np.zeros((2,))
         # self.agent_location = np.random.randint(0, self.window_size -1, size=(2,)).astype(np.float32)
 
         # We will sample the target's location randomly until it does not coincide with the agent's location
-        
+        self.target_location = np.random.randint(0,self.window_size - 1, size=(2,)).astype(int) 
         # self.target_location = self.agent_location
-        self.target_location = np.zeros((2,)) + 100
-        while np.array_equal(self.target_location, self.agent_location):
+        # self.target_location = np.zeros((2,)) + 100
+        distance = np.linalg.norm(self.agent_location - self.target_location)
+        while distance < 15:
             self.target_location = self.np_random.integers(
                 0, self.window_size, size=2, dtype=int
             )
+            distance = np.linalg.norm(self.agent_location - self.target_location)
         # currently using action as direction displacement's 0th derivative
         self.agent_location = self.agent_location.astype(float)
         self.target_location = self.target_location.astype(float)
@@ -93,8 +109,9 @@ class DroneSim(gym.Env):
         # direction = self._action_to_direction[action]
         # We use `np.clip` to make sure we don't leave the grid
         action = action.numpy()
-        self.agent_location += action * 10
-
+        self.agent_location += self.agent_velocity 
+        self.agent_velocity += action
+        self.agent_velocity = np.clip(self.agent_velocity,-10,10)
         #self.agent_location = np.clip(self.agent_location,0,self.window_size -1)
         
         # An episode is done iff the agent has reached the target
